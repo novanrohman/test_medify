@@ -11,7 +11,9 @@
     $(document).ready(function() {
         $('#table').DataTable({
             searching: false,
-            order: [[0, 'desc']],
+            order: [
+                [0, 'desc']
+            ],
         });
         getData()
     });
@@ -20,8 +22,8 @@
         getData()
     })
 
-    function getData(){
-        
+    function getData() {
+
         $('#loading-filter').show();
         var dataTableObj = $('#table').DataTable();
         var filter_kode = $('#filter-kode').val()
@@ -31,11 +33,12 @@
         dataTableObj.clear().draw();
 
         $.ajax({
-            url: '{{url("master-items/search")}}',
+            url: '{{ url('master-items/search') }}',
             dataType: 'json',
             tryCount: 0,
             retryLimit: 3,
-            data: 'kode=' + filter_kode + '&nama=' + filter_nama + '&hargamin=' + filter_harga_min + '&hargamax=' + filter_harga_max,
+            data: 'kode=' + filter_kode + '&nama=' + filter_nama + '&hargamin=' + filter_harga_min +
+                '&hargamax=' + filter_harga_max,
             success: function(results) {
                 var data = results.data
 
@@ -45,12 +48,23 @@
                     harga_jual = Math.round(harga_jual)
                     var kode = item.kode;
 
-                    var html = `<a href="{{url('master-items/view/')}}/` + kode + `" class="btn btn-primary">View</a>`
 
+
+
+                    var base_view_url = "{{ url('master-items/view/') }}";
+                    var html = '<a href="' + base_view_url + kode +
+                        '" class="btn btn-primary">View</a>';
+                    var img_produk = '<img src="{{ asset('storage/') }}/' + item.image +
+                        '" width="100px" />';
+                    array_temp.push(img_produk)
+                    // console.log(item);
                     $.each(item, function(obj_name, obj_value) {
                         if (obj_name == 'laba') return false;
                         array_temp.push(obj_value)
                     })
+
+
+                    // array_temp.push(img_produk)
                     array_temp.push(harga_jual)
                     array_temp.push(item.supplier)
                     array_temp.push(html)

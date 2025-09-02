@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\MasterItem;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MasterItemsController extends Controller
 {
@@ -21,11 +24,13 @@ class MasterItemsController extends Controller
 
         $data_search = MasterItem::query();
 
+
         if (!empty($kode)) $data_search = $data_search->where('kode', $kode);
         if (!empty($nama)) $data_search = $data_search->where('nama', 'LIKE', '%' . $nama . '%');
         if (!empty($hargamin)) $data_search = $data_search->where('harga_beli', '>=', $hargamin)->where('harga_beli', '<=', $hargamax);
 
-        $data_search = $data_search->select('kode', 'nama', 'jenis', 'harga_beli', 'laba', 'supplier')->orderBy('id')->get();
+        $data_search = $data_search->select('kode', 'image',  'nama', 'jenis', 'harga_beli', 'laba', 'supplier')->orderBy('id')->get();
+        // @dd($data_search);
 
 
         return json_encode([
@@ -65,12 +70,17 @@ class MasterItemsController extends Controller
             $kode = $data_item->kode;
         }
 
+        if ($request->file('img_barang')) {
+            $path = $request->file('img_barang')->store('img_barang', env('FILESYSTEM_DISK'));
+        }
+
         $data_item->nama = $request->nama;
         $data_item->harga_beli = $request->harga_beli;
         $data_item->laba = $request->laba;
         $data_item->kode = $kode;
         $data_item->supplier = $request->supplier;
         $data_item->jenis = $request->jenis;
+        $data_item->image = $path ?? null;
         $data_item->save();
 
         return redirect('master-items');
@@ -85,13 +95,12 @@ class MasterItemsController extends Controller
     public function updateRandomData()
     {
         $data = MasterItem::get();
-        foreach($data as $item)
-        {
+        foreach ($data as $item) {
             $kode = $item->id;
             $kode = str_pad($kode, 5, '0', STR_PAD_LEFT);
 
-            $item->harga_beli = rand(100,1000000);
-            $item->laba = rand(10,99);
+            $item->harga_beli = rand(100, 1000000);
+            $item->laba = rand(10, 99);
             $item->kode = $kode;
             $item->supplier = $this->getRandomSupplier();
             $item->jenis = $this->getRandomJenis();
@@ -101,15 +110,15 @@ class MasterItemsController extends Controller
 
     private function getRandomSupplier()
     {
-        $array = ['Tokopaedi','Bukulapuk','TokoBagas','E Commurz','Blublu'];
-        $random = rand(0,4);
+        $array = ['Tokopaedi', 'Bukulapuk', 'TokoBagas', 'E Commurz', 'Blublu'];
+        $random = rand(0, 4);
         return $array[$random];
     }
 
     private function getRandomJenis()
     {
-        $array = ['Obat','Alkes','Matkes','Umum','ATK'];
-        $random = rand(0,4);
+        $array = ['Obat', 'Alkes', 'Matkes', 'Umum', 'ATK'];
+        $random = rand(0, 4);
         return $array[$random];
     }
 }
